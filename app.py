@@ -26,17 +26,8 @@ def main():
     diabetes = st.selectbox('Diabetes',('','yes','no'))
     cholesterol_level = st.text_input('Cholesterol level')
     obesity = st.selectbox('Obesity (BMI > 30)',('','yes','no'))
-#     waist_circumference = st.text_input('Waist circumference')
-#     family_history = st.selectbox('Family history',('','yes','no'))
-#     dietary_habits = st.selectbox('Dietary habits',('','Healthy','Unhealthy'))
-#     air_pollution_exposure = st.selectbox('Air pollution exposure',('','Low','Moderate','High'))
-#     sleep_hours = st.number_input('Sleep hours')
     fasting_blood_sugar = st.text_input('Fasting blood sugar')
-#     cholesterol_hdl = st.number_input('Cholesterol hdl')
-#     cholesterol_ldl = st.number_input('Cholesterol ldl')
-#     EKG_results = st.selectbox('ECG results',('','Normal','Abnormal'))
     previous_heart_disease = st.selectbox('Previous heart disease',('','yes','no'))
-#     medication_usage = st.selectbox('Medication usage',('','yes','no'))
     smoking_status = st.selectbox('Smoking status',('','Never','Past','Current'))
 
 
@@ -44,6 +35,7 @@ def main():
 
     model = pickle.load(open('model.sav','rb'))
     ohe_smoking = pickle.load(open('ohe_smoking.sav','rb'))
+    scaler = pickle.load(open('scaler.sav','rb'))
 
     pred = st.button('Predict')
 
@@ -53,35 +45,18 @@ def main():
         data = pd.DataFrame(data=data,columns=('age','hypertension','diabetes','cholesterol_level','obesity','fasting_blood_sugar','previous_heart_disease'))
 
         smoking1 = ohe_smoking.transform([[smoking_status]])
-
         smoking = pd.DataFrame(smoking1,columns=ohe_smoking.get_feature_names_out())
-
         data = pd.concat((data,smoking),axis=1)
-        # print(data)
         data['age'] = data['age'].astype(float)
         data['cholesterol_level'] = data['cholesterol_level'].astype(float)
-     #    data['waist_circumference'] = data['waist_circumference'].astype(float)
-        # data['sleep_hours'] = data['sleep_hours'].astype(float)
         data['fasting_blood_sugar'] = data['fasting_blood_sugar'].astype(float)
-        # data['cholesterol_hdl'] = data['cholesterol_hdl'].astype(float)
-        # data['cholesterol_ldl'] = data['cholesterol_ldl'].astype(float)
-        
         data['hypertension'] = data['hypertension'].replace({'yes': 1,'no': 0}).astype(float)
         data['diabetes'] = data['diabetes'].replace({'yes': 1,'no': 0}).astype(float)
         data['obesity'] = data['obesity'].replace({'yes': 1,'no': 0}).astype(float)
-     #    data['family_history'] = data['family_history'].replace({'yes': 1,'no': 0}).astype(float)
         data['previous_heart_disease'] = data['previous_heart_disease'].replace({'yes': 1,'no': 0}).astype(float)
-     #    data['medication_usage'] = data['medication_usage'].replace({'yes': 1,'no': 0}).astype(float)
-     #    data['dietary_habits'] = data['dietary_habits'].replace({'Healthy': 1,'Unhealthy': 0}).astype(float)
-     #    data['air_pollution_exposure'] = data['air_pollution_exposure'].replace({'Low':0,'Moderate':1,'High':2}).astype(float)
-     #    data['EKG_results'] = data['EKG_results'].replace({'Normal':1,'Abnormal':0}).astype(float)
-
-        # data = [[60,0,1,211,0,83,0,0,1,5,173,48,121,1,0,0,0,1,0]]
-        # data= pd.DataFrame(data=data)
-
-        print(data.info())
+        data = scaler.transform(data)
         print(data)
-        prediction = model.predict(data.values)
+        prediction = model.predict(data)
         print(prediction)
          
         if prediction == 1:
